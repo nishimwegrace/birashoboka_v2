@@ -16,29 +16,59 @@ A vanilla PHP REST API using Eloquent ORM and MySQL/MariaDB. This project is bui
 
 ## Installation
 
-1. Copy `.env.example` to `.env` and update the database credentials.
-2. Install dependencies:
+This project supports running locally with Docker (recommended) or directly on your host PHP environment.
+
+1) Create `.env` at the project root (an example is provided in the repository). Ensure at minimum:
+
+```
+DB_HOST=db
+DB_PORT=3306
+DB_DATABASE=birashoboka_v2
+DB_USERNAME=root
+DB_PASSWORD=rootsecret
+APP_URL=http://localhost:8000
+```
+
+2) With Docker (recommended)
+
+- Build and start services:
+
+```bash
+docker compose up -d --build
+# or, using the provided Makefile
+make up
+```
+
+- Run migrations (retries until DB ready) and seed:
+
+```bash
+make migrate
+make seed
+```
+
+- Useful helpers:
+
+```bash
+make ps       # list containers
+make logs     # follow logs
+make shell    # open a shell in the app container
+```
+
+3) Without Docker
+
+- Install PHP and Composer, then from project root:
 
 ```bash
 composer install
-```
-
-3. Create the database and run migrations:
-
-```bash
-composer migrate
-```
-
-4. Seed the database:
-
-```bash
-composer seed
-```
-
-5. Serve the API from the `public/` directory. Example using PHP built-in server:
-
-```bash
 php -S localhost:8000 -t public
+php database/migrate.php
+php database/seed.php
+```
+
+Notes about Composer: the Docker image is configured to not run `composer install` during image build by default. If you need Composer inside the container, run:
+
+```bash
+docker run --rm -v "$PWD":/app -w /app composer:2 install --no-interaction --prefer-dist --optimize-autoloader
 ```
 
 ## Environment variables
@@ -115,18 +145,38 @@ Uploaded testimonial images are processed and stored in `storage/uploads/testimo
 
 ## Running migrations and seeders
 
-After copying `.env` and running `composer install`, run migrations and seeders:
+With Docker (recommended):
 
 ```bash
-php database/migrate.php
-php database/seed.php
+make migrate
+make seed
 ```
 
-If you prefer the composer scripts defined in `composer.json`:
+Or run directly inside the app container:
 
 ```bash
-composer migrate
-composer seed
+docker compose exec app php database/migrate.php
+docker compose exec app php database/seed.php
 ```
 
-If migration or seeding fails due to database connection, verify your `.env` settings and that the database exists.
+If you encounter a DB connection error, check:
+
+- The app's runtime env values:
+
+```bash
+docker compose exec app php -r 'require "bootstrap.php"; echo "DB_HOST=".env("DB_HOST")." DB_USER=".env("DB_USERNAME")."\n";'
+```
+
+- MySQL logs and health:
+
+```bash
+docker compose logs --tail=200 db
+docker compose exec db mysqladmin ping -uroot -prootsecret
+```
+
+To recreate a fresh database (warning: deletes data):
+
+```bash
+docker compose down -v
+docker compose up -d --build
+```
