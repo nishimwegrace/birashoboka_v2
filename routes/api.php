@@ -9,7 +9,7 @@ return [
     ['method' => 'GET', 'path' => '/api/auth/me', 'action' => 'AuthController@me', 'auth' => true],
 
     // user management routes
-    ['method' => 'GET', 'path' => '/api/users', 'action' => 'UserController@index', 'auth' => true],
+    ['method' => 'GET', 'path' => '/api/users', 'action' => 'UserController@index', 'auth' => false],
     ['method' => 'GET', 'path' => '/api/users/{id}', 'action' => 'UserController@show', 'auth' => true],
     ['method' => 'POST', 'path' => '/api/users', 'action' => 'UserController@store', 'auth' => true],
     ['method' => 'PUT', 'path' => '/api/users/{id}', 'action' => 'UserController@update', 'auth' => true],
