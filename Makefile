@@ -25,3 +25,6 @@ migrate:
 
 seed:
 	$(DC) exec app php database/seed.php
+
+init:
+	@test -f .env || cp .env.example .env && echo ".env created from .env.example"
