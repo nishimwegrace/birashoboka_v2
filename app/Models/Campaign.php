@@ -18,8 +18,14 @@ class Campaign extends Model
         'start_date',
         'end_date',
         'place',
+        'is_open',
+        'quota',
     ];
     public $timestamps = true;
+
+    protected $casts = [
+        'is_open' => 'boolean',
+    ];
 
     public function volet()
     {

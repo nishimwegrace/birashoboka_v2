@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Activity extends Model
 {
     protected $table = 'activities';
-    protected $fillable = ['volet_id', 'title', 'description'];
+    protected $fillable = ['volet_id', 'title', 'description', 'icon'];
     public $timestamps = true;
 
     public function volet()

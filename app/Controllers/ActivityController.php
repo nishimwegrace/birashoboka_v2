@@ -17,9 +17,10 @@ class ActivityController extends Controller
     public static function store(array $body): void
     {
         $errors = Validator::validate($body, [
-            'volet_id' => 'required|exists:volets,id',
-            'title' => 'required|string',
+            'volet_id'    => 'required|exists:volets,id',
+            'title'       => 'required|string',
             'description' => 'required|string',
+            'icon'        => 'nullable|string',
         ]);
 
         if (!empty($errors)) {
@@ -27,12 +28,13 @@ class ActivityController extends Controller
         }
 
         $activity = Activity::create([
-            'volet_id' => $body['volet_id'],
-            'title' => trim($body['title']),
+            'volet_id'    => $body['volet_id'],
+            'title'       => trim($body['title']),
             'description' => trim($body['description']),
+            'icon'        => $body['icon'] ?? null,
         ]);
 
-        apiResponse(true, 'Activity created successfully', $activity, 201);
+        apiResponse(true, 'Activity created successfully', $activity->load('volet'), 201);
     }
 
     public static function show(int $id): void
@@ -53,23 +55,24 @@ class ActivityController extends Controller
         }
 
         $errors = Validator::validate($body, [
-            'volet_id' => 'nullable|exists:volets,id',
-            'title' => 'nullable|string',
+            'volet_id'    => 'nullable|exists:volets,id',
+            'title'       => 'nullable|string',
             'description' => 'nullable|string',
+            'icon'        => 'nullable|string',
         ]);
 
         if (!empty($errors)) {
             apiResponse(false, 'Validation failed', $errors, 422);
         }
 
-        foreach (['volet_id', 'title', 'description'] as $field) {
+        foreach (['volet_id', 'title', 'description', 'icon'] as $field) {
             if (isset($body[$field])) {
                 $activity->{$field} = $body[$field];
             }
         }
         $activity->save();
 
-        apiResponse(true, 'Activity updated successfully', $activity);
+        apiResponse(true, 'Activity updated successfully', $activity->load('volet'));
     }
 
     public static function destroy(int $id): void

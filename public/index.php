@@ -66,6 +66,16 @@ foreach ($routes as $route) {
 }
 
 if (!$matched) {
+    if (str_starts_with($uri, '/api/') || $uri === '/api') {
+        apiResponse(false, 'Endpoint not found', null, 404);
+    }
+
+    $indexPath = __DIR__ . '/index.html';
+    if (file_exists($indexPath)) {
+        header('Content-Type: text/html; charset=utf-8');
+        readfile($indexPath);
+        exit;
+    }
 
     apiResponse(false, 'Endpoint not found', null, 404);
 }

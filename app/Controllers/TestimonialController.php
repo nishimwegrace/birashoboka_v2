@@ -11,7 +11,7 @@ class TestimonialController extends Controller
     public static function index(): void
     {
         $query = Testimonial::with('activity');
-        self::applySearchAndSort($query, ['name', 'content'], ['name', 'created_at']);
+        self::applySearchAndSort($query, ['name', 'content', 'role'], ['name', 'created_at']);
         self::paginate($query, 'Testimonials retrieved successfully');
     }
 
@@ -19,8 +19,10 @@ class TestimonialController extends Controller
     {
         $errors = Validator::validate($body, [
             'activity_id' => 'nullable|exists:activities,id',
-            'name' => 'required|string',
-            'content' => 'required|string',
+            'name'        => 'required|string',
+            'role'        => 'nullable|string',
+            'content'     => 'required|string',
+            'rating'      => 'nullable|integer',
         ]);
 
         if (!empty($errors)) {
@@ -38,12 +40,14 @@ class TestimonialController extends Controller
 
         $testimonial = Testimonial::create([
             'activity_id' => $body['activity_id'] ?? null,
-            'name' => trim($body['name']),
-            'content' => trim($body['content']),
-            'photo' => $photoPath,
+            'name'        => trim($body['name']),
+            'role'        => $body['role'] ?? null,
+            'photo'       => $photoPath,
+            'content'     => trim($body['content']),
+            'rating'      => isset($body['rating']) ? (int) $body['rating'] : 5,
         ]);
 
-        apiResponse(true, 'Testimonial created successfully', $testimonial, 201);
+        apiResponse(true, 'Testimonial created successfully', $testimonial->load('activity'), 201);
     }
 
     public static function show(int $id): void
@@ -65,8 +69,10 @@ class TestimonialController extends Controller
 
         $errors = Validator::validate($body, [
             'activity_id' => 'nullable|exists:activities,id',
-            'name' => 'nullable|string',
-            'content' => 'nullable|string',
+            'name'        => 'nullable|string',
+            'role'        => 'nullable|string',
+            'content'     => 'nullable|string',
+            'rating'      => 'nullable|integer',
         ]);
 
         if (!empty($errors)) {
@@ -85,14 +91,13 @@ class TestimonialController extends Controller
             }
         }
 
-        foreach (['activity_id', 'name', 'content'] as $field) {
-            if (isset($body[$field])) {
-                $testimonial->{$field} = $body[$field];
-            }
+        foreach (['activity_id', 'name', 'role', 'content'] as $field) {
+            if (isset($body[$field])) $testimonial->{$field} = $body[$field];
         }
+        if (isset($body['rating'])) $testimonial->rating = (int) $body['rating'];
         $testimonial->save();
 
-        apiResponse(true, 'Testimonial updated successfully', $testimonial);
+        apiResponse(true, 'Testimonial updated successfully', $testimonial->load('activity'));
     }
 
     public static function destroy(int $id): void

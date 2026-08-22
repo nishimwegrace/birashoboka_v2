@@ -10,20 +10,26 @@ class StudentController extends Controller
     public static function index(): void
     {
         $query = Student::query();
-        self::applySearchAndSort($query, ['name', 'email', 'phone', 'interest', 'address'], ['name', 'created_at']);
+        self::applySearchAndSort($query, ['name', 'email', 'phone', 'interest', 'address', 'province', 'commune'], ['name', 'created_at']);
         self::paginate($query, 'Students retrieved successfully');
     }
 
     public static function store(array $body): void
     {
         $errors = Validator::validate($body, [
-            'name' => 'required|string',
-            'email' => 'nullable|email',
-            'phone' => 'nullable|string',
-            'gender' => 'nullable|in:male,female,other',
-            'age' => 'nullable|integer',
-            'address' => 'nullable|string',
-            'interest' => 'nullable|string',
+            'name'                   => 'required|string',
+            'email'                  => 'nullable|email',
+            'phone'                  => 'nullable|string',
+            'gender'                 => 'nullable|in:male,female,other',
+            'age'                    => 'nullable|integer',
+            'birth_date'             => 'nullable|date',
+            'nationality'            => 'nullable|string',
+            'province'               => 'nullable|string',
+            'commune'                => 'nullable|string',
+            'address'                => 'nullable|string',
+            'vulnerability_category' => 'nullable|string',
+            'education_level'        => 'nullable|string',
+            'interest'               => 'nullable|string',
         ]);
 
         if (!empty($errors)) {
@@ -31,13 +37,19 @@ class StudentController extends Controller
         }
 
         $student = Student::create([
-            'name' => trim($body['name']),
-            'email' => $body['email'] ? strtolower(trim($body['email'])) : null,
-            'phone' => $body['phone'] ?? null,
-            'gender' => $body['gender'] ?? null,
-            'age' => isset($body['age']) ? (int) $body['age'] : null,
-            'address' => $body['address'] ?? null,
-            'interest' => $body['interest'] ?? null,
+            'name'                   => trim($body['name']),
+            'email'                  => isset($body['email']) && $body['email'] ? strtolower(trim($body['email'])) : null,
+            'phone'                  => $body['phone'] ?? null,
+            'gender'                 => $body['gender'] ?? null,
+            'age'                    => isset($body['age']) ? (int) $body['age'] : null,
+            'birth_date'             => $body['birth_date'] ?? null,
+            'nationality'            => $body['nationality'] ?? null,
+            'province'               => $body['province'] ?? null,
+            'commune'                => $body['commune'] ?? null,
+            'address'                => $body['address'] ?? null,
+            'vulnerability_category' => $body['vulnerability_category'] ?? null,
+            'education_level'        => $body['education_level'] ?? null,
+            'interest'               => $body['interest'] ?? null,
         ]);
 
         apiResponse(true, 'Student created successfully', $student, 201);
@@ -61,20 +73,28 @@ class StudentController extends Controller
         }
 
         $errors = Validator::validate($body, [
-            'name' => 'nullable|string',
-            'email' => 'nullable|email',
-            'phone' => 'nullable|string',
-            'gender' => 'nullable|in:male,female,other',
-            'age' => 'nullable|integer',
-            'address' => 'nullable|string',
-            'interest' => 'nullable|string',
+            'name'                   => 'nullable|string',
+            'email'                  => 'nullable|email',
+            'phone'                  => 'nullable|string',
+            'gender'                 => 'nullable|in:male,female,other',
+            'age'                    => 'nullable|integer',
+            'birth_date'             => 'nullable|date',
+            'nationality'            => 'nullable|string',
+            'province'               => 'nullable|string',
+            'commune'                => 'nullable|string',
+            'address'                => 'nullable|string',
+            'vulnerability_category' => 'nullable|string',
+            'education_level'        => 'nullable|string',
+            'interest'               => 'nullable|string',
         ]);
 
         if (!empty($errors)) {
             apiResponse(false, 'Validation failed', $errors, 422);
         }
 
-        foreach (['name', 'email', 'phone', 'gender', 'age', 'address', 'interest'] as $field) {
+        $fields = ['name', 'email', 'phone', 'gender', 'age', 'birth_date', 'nationality',
+                   'province', 'commune', 'address', 'vulnerability_category', 'education_level', 'interest'];
+        foreach ($fields as $field) {
             if (isset($body[$field])) {
                 $student->{$field} = $field === 'email' && $body[$field] ? strtolower(trim($body[$field])) : $body[$field];
             }
