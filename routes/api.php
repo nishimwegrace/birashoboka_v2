@@ -1,7 +1,6 @@
 <?php
 
 return [
-    ['method' => 'GET', 'path' => '/', 'action' => 'HealthController@index', 'auth' => false],
     ['method' => 'GET', 'path' => '/api/health', 'action' => 'HealthController@index', 'auth' => false],
 
     // Authentication routes
