@@ -10,13 +10,21 @@ RUN apt-get update \
         unzip \
         git \
         zlib1g-dev \
-    && docker-php-ext-install pdo pdo_mysql zip \
+        libpng-dev \
+        libjpeg62-turbo-dev \
+        libwebp-dev \
+        libfreetype6-dev \
+    && docker-php-ext-configure gd --with-jpeg --with-webp --with-freetype \
+    && docker-php-ext-install pdo pdo_mysql zip gd \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 RUN a2enmod rewrite
+
+# Apply custom PHP ini overrides (upload limits, display_errors off, etc.)
+COPY docker/php/custom.ini /usr/local/etc/php/conf.d/custom.ini
 
 WORKDIR /var/www/html
 

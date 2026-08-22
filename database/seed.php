@@ -35,11 +35,19 @@ Capsule::statement('SET FOREIGN_KEY_CHECKS=1');
 
 // Users
 $user = User::create([
+    'name' => 'Gérard Nishimwe',
+    'email' => 'admin@birashobokacenter.org',
+    'password' => AuthService::hashPassword('admin123'),
+]);
+AuthService::createTokenForUser($user);
+
+// Secondary user
+$user2 = User::create([
     'name' => 'giraso',
     'email' => 'giraso.pro@gmail.com',
     'password' => AuthService::hashPassword('password'),
 ]);
-AuthService::createTokenForUser($user);
+AuthService::createTokenForUser($user2);
 
 // Volets
 $volet1 = Volet::create([

@@ -16,9 +16,24 @@ if ($method === 'OPTIONS') {
     exit;
 }
 
+// Handle post_max_size overflow: PHP silently discards $_POST & $_FILES when
+// multipart payload exceeds post_max_size — detect it and return clean JSON.
+if ($method === 'POST') {
+    $contentLength = (int) ($_SERVER['CONTENT_LENGTH'] ?? 0);
+    $postMaxBytes  = self_parse_bytes(ini_get('post_max_size'));
+    $isMultipart   = str_contains($_SERVER['CONTENT_TYPE'] ?? '', 'multipart/form-data');
+    if ($isMultipart && $contentLength > 0 && $contentLength > $postMaxBytes) {
+        apiResponse(false, 'The uploaded file payload exceeds the maximum allowed server limit (' . ini_get('post_max_size') . ').', null, 422);
+    }
+}
+
+// Parse body from raw JSON input and/or multipart/form-data $_POST
 $body = json_decode(file_get_contents('php://input') ?: '', true);
 if (!is_array($body)) {
     $body = [];
+}
+if (!empty($_POST)) {
+    $body = array_merge($body, $_POST);
 }
 
 $matched = false;
@@ -91,4 +106,17 @@ function matchRoute(string $pattern, string $uri): array
     array_shift($matches);
     preg_match_all('#\{([^/]+)\}#', $pattern, $keys);
     return [true, array_combine($keys[1], $matches) ?: []];
+}
+
+function self_parse_bytes(string $val): int
+{
+    $val  = trim($val);
+    $last = strtolower($val[strlen($val) - 1]);
+    $num  = (int) $val;
+    return match ($last) {
+        'g' => $num * 1024 * 1024 * 1024,
+        'm' => $num * 1024 * 1024,
+        'k' => $num * 1024,
+        default => $num,
+    };
 }

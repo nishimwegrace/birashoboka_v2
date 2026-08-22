@@ -6,7 +6,7 @@ use Intervention\Image\ImageManagerStatic as Image;
 
 class ImageService
 {
-    protected const MAX_FILE_SIZE = 5 * 1024 * 1024;
+    protected const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
     protected const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
     protected const ALLOWED_MIMES = [
         'image/jpeg',
