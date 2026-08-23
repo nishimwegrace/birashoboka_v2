@@ -55,6 +55,8 @@ return [
     ['method' => 'POST', 'path' => '/api/testimonials', 'action' => 'TestimonialController@store', 'auth' => true],
     ['method' => 'GET', 'path' => '/api/testimonials/{id}', 'action' => 'TestimonialController@show', 'auth' => false],
     ['method' => 'PUT', 'path' => '/api/testimonials/{id}', 'action' => 'TestimonialController@update', 'auth' => true],
+    ['method' => 'PATCH', 'path' => '/api/testimonials/{id}', 'action' => 'TestimonialController@update', 'auth' => true],
+    ['method' => 'POST', 'path' => '/api/testimonials/{id}', 'action' => 'TestimonialController@update', 'auth' => true],
     ['method' => 'DELETE', 'path' => '/api/testimonials/{id}', 'action' => 'TestimonialController@destroy', 'auth' => true],
 
     // Posts routes
