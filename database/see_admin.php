@@ -20,8 +20,8 @@ Capsule::statement('SET FOREIGN_KEY_CHECKS=1');
 // Users
 $user = User::create([
     'name' => 'Grace Nishimwe',
-    'email' => 'admin@birashobokacenter.org',
-    'password' => AuthService::hashPassword('admin123'),
+    'email' => 'nishimwegrace@gmail.com',
+    'password' => AuthService::hashPassword('password'),
 ]);
 AuthService::createTokenForUser($user);
 
