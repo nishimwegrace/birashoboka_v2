@@ -78,7 +78,7 @@ class ImageService
             }
         }
 
-        return 'uploads/' . trim($folder, '/') . '/' . $filename;
+        return 'storage/uploads/' . trim($folder, '/') . '/' . $filename;
     }
 
     public static function delete(string $path): void
