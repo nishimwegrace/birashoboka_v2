@@ -39,6 +39,7 @@ return [
     ['method' => 'POST', 'path' => '/api/partners', 'action' => 'PartnerController@store', 'auth' => true],
     ['method' => 'GET', 'path' => '/api/partners/{id}', 'action' => 'PartnerController@show', 'auth' => false],
     ['method' => 'PUT', 'path' => '/api/partners/{id}', 'action' => 'PartnerController@update', 'auth' => true],
+    ['method' => 'POST', 'path' => '/api/partners/{id}', 'action' => 'PartnerController@update', 'auth' => true],
     ['method' => 'DELETE', 'path' => '/api/partners/{id}', 'action' => 'PartnerController@destroy', 'auth' => true],
 
     // Member routes
@@ -46,6 +47,7 @@ return [
     ['method' => 'POST', 'path' => '/api/members', 'action' => 'MemberController@store', 'auth' => true],
     ['method' => 'GET', 'path' => '/api/members/{id}', 'action' => 'MemberController@show', 'auth' => false],
     ['method' => 'PUT', 'path' => '/api/members/{id}', 'action' => 'MemberController@update', 'auth' => true],
+    ['method' => 'POST', 'path' => '/api/members/{id}', 'action' => 'MemberController@update', 'auth' => true],
     ['method' => 'DELETE', 'path' => '/api/members/{id}', 'action' => 'MemberController@destroy', 'auth' => true],
 
     // Testimonials routes
@@ -60,7 +62,9 @@ return [
     ['method' => 'POST', 'path' => '/api/posts', 'action' => 'PostController@store', 'auth' => true],
     ['method' => 'GET', 'path' => '/api/posts/{id}', 'action' => 'PostController@show', 'auth' => false],
     ['method' => 'PUT', 'path' => '/api/posts/{id}', 'action' => 'PostController@update', 'auth' => true],
+    ['method' => 'POST', 'path' => '/api/posts/{id}', 'action' => 'PostController@update', 'auth' => true],
     ['method' => 'DELETE', 'path' => '/api/posts/{id}', 'action' => 'PostController@destroy', 'auth' => true],
+
 
     // Campaigns routes
     ['method' => 'GET', 'path' => '/api/campaigns', 'action' => 'CampaignController@index', 'auth' => false],
