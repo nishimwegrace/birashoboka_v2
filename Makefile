@@ -14,6 +14,9 @@ down:
 ps:
 	$(DC) ps
 
+restart:
+	$(DC) restart
+
 logs:
 	$(DC) logs -f
 
@@ -25,6 +28,12 @@ migrate:
 
 seed:
 	$(DC) exec app php database/seed.php
+
+admin:
+	$(DC) exec app php database/see_admin.php
+
+refresh:
+	$(DC) exec app php database/migrate.php --fresh
 
 init:
 	@test -f .env || cp .env.example .env && echo ".env created from .env.example"
