@@ -22,8 +22,8 @@ class VoletController extends Controller
             'slogan' => 'nullable|string',
             'subtitle' => 'nullable|string',
             'description' => 'nullable|string',
-            'target' => 'required|in:young,women,all',
-            'place' => 'required|string',
+            'target' => 'nullable|in:young,women,all',
+            'place' => 'nullable|string',
         ]);
 
         if (!empty($errors)) {
@@ -35,8 +35,8 @@ class VoletController extends Controller
             'slogan' => trim($body['slogan'] ?? ''),
             'subtitle' => trim($body['subtitle'] ?? ''),
             'description' => trim($body['description'] ?? ''),
-            'target' => $body['target'],
-            'place' => trim($body['place']),
+            'target' => $body['target'] ?? 'women',
+            'place' => trim($body['place'] ?? 'Ngozi & Bujumbura, Burundi'),
         ]);
 
         apiResponse(true, 'Volet created successfully', $volet, 201);
