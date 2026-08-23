@@ -56,6 +56,19 @@ class EnrollController extends Controller
         }
 
         $result = DB::transaction(function () use ($studentData, $inscriptionData) {
+            $birthDate = $studentData['birth_date'] ?? null;
+            $calculatedAge = isset($studentData['age']) ? (int) $studentData['age'] : null;
+
+            if (!empty($birthDate)) {
+                try {
+                    $dob = new \DateTime($birthDate);
+                    $now = new \DateTime();
+                    $calculatedAge = $now->diff($dob)->y;
+                } catch (\Throwable $e) {
+                    throw new \Exception('Invalid birth date format. Expected YYYY-MM-DD.');
+                }
+            }
+
             $student = Student::create([
                 'name'                   => trim($studentData['name']),
                 'email'                  => isset($studentData['email']) && $studentData['email']
@@ -63,8 +76,8 @@ class EnrollController extends Controller
                     : null,
                 'phone'                  => $studentData['phone'] ?? null,
                 'gender'                 => $studentData['gender'] ?? null,
-                'age'                    => isset($studentData['age']) ? (int) $studentData['age'] : null,
-                'birth_date'             => $studentData['birth_date'] ?? null,
+                'age'                    => $calculatedAge,
+                'birth_date'             => $birthDate,
                 'nationality'            => $studentData['nationality'] ?? null,
                 'province'               => $studentData['province'] ?? null,
                 'commune'                => $studentData['commune'] ?? null,

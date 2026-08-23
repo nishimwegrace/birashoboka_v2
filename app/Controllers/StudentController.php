@@ -36,13 +36,26 @@ class StudentController extends Controller
             apiResponse(false, 'Validation failed', $errors, 422);
         }
 
+        $birthDate = $body['birth_date'] ?? null;
+        $calculatedAge = isset($body['age']) ? (int) $body['age'] : null;
+
+        if (!empty($birthDate)) {
+            try {
+                $dob = new \DateTime($birthDate);
+                $now = new \DateTime();
+                $calculatedAge = $now->diff($dob)->y;
+            } catch (\Throwable $e) {
+                // Fallback if date parsing fails
+            }
+        }
+
         $student = Student::create([
             'name'                   => trim($body['name']),
             'email'                  => isset($body['email']) && $body['email'] ? strtolower(trim($body['email'])) : null,
             'phone'                  => $body['phone'] ?? null,
             'gender'                 => $body['gender'] ?? null,
-            'age'                    => isset($body['age']) ? (int) $body['age'] : null,
-            'birth_date'             => $body['birth_date'] ?? null,
+            'age'                    => $calculatedAge,
+            'birth_date'             => $birthDate,
             'nationality'            => $body['nationality'] ?? null,
             'province'               => $body['province'] ?? null,
             'commune'                => $body['commune'] ?? null,
@@ -90,6 +103,16 @@ class StudentController extends Controller
 
         if (!empty($errors)) {
             apiResponse(false, 'Validation failed', $errors, 422);
+        }
+
+        if (isset($body['birth_date']) && !empty($body['birth_date'])) {
+            try {
+                $dob = new \DateTime($body['birth_date']);
+                $now = new \DateTime();
+                $body['age'] = $now->diff($dob)->y;
+            } catch (\Throwable $e) {
+                // Ignore
+            }
         }
 
         $fields = ['name', 'email', 'phone', 'gender', 'age', 'birth_date', 'nationality',
