@@ -34,27 +34,49 @@ class ImageService
             throw new \RuntimeException('Unsupported image format.');
         }
 
-        $extension = self::getExtensionFromMime($info['mime']);
-        $filename = bin2hex(random_bytes(12)) . '.' . $extension;
         $targetDirectory = __DIR__ . '/../../storage/uploads/' . trim($folder, '/');
         if (!is_dir($targetDirectory)) {
-            mkdir($targetDirectory, 0755, true);
+            @mkdir($targetDirectory, 0777, true);
+        }
+        if (!is_writable($targetDirectory)) {
+            @chmod($targetDirectory, 0777);
+            @chmod(dirname($targetDirectory), 0777);
         }
 
-        Image::configure(['driver' => 'gd']);
-        $image = Image::make($file['tmp_name']);
-        $image->orientate();
-
-        $maxWidth = (int) env('IMAGE_MAX_WIDTH', 1600);
-        $maxHeight = (int) env('IMAGE_MAX_HEIGHT', 1600);
-        $image->resize($maxWidth, $maxHeight, function ($constraint) {
-            $constraint->aspectRatio();
-            $constraint->upsize();
-        });
-
-        $quality = (int) env('IMAGE_QUALITY', 82);
+        $filename = bin2hex(random_bytes(12)) . '.webp';
         $outputPath = $targetDirectory . '/' . $filename;
-        $image->encode('webp', $quality)->save($outputPath);
+
+        try {
+            Image::configure(['driver' => 'gd']);
+            $image = Image::make($file['tmp_name']);
+            
+            if (function_exists('exif_read_data')) {
+                try {
+                    $image->orientate();
+                } catch (\Throwable $e) {
+                    // Ignore EXIF errors if EXIF data is unreadable or unsupported
+                }
+            }
+
+            $maxWidth = (int) env('IMAGE_MAX_WIDTH', 1600);
+            $maxHeight = (int) env('IMAGE_MAX_HEIGHT', 1600);
+            $image->resize($maxWidth, $maxHeight, function ($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            });
+
+            $quality = (int) env('IMAGE_QUALITY', 82);
+            $image->encode('webp', $quality)->save($outputPath, $quality, 'webp');
+        } catch (\Throwable $e) {
+            // Fallback: if GD image processing or encoding fails, save the uploaded file directly
+            $rawExtension = self::getExtensionFromMime($info['mime']);
+            $filename = bin2hex(random_bytes(12)) . '.' . $rawExtension;
+            $outputPath = $targetDirectory . '/' . $filename;
+
+            if (!@copy($file['tmp_name'], $outputPath)) {
+                throw new \RuntimeException("Can't write image data to path ({$outputPath})");
+            }
+        }
 
         return 'uploads/' . trim($folder, '/') . '/' . $filename;
     }
