@@ -1,12 +1,16 @@
 <?php
 
-require_once __DIR__ . '/../bootstrap.php';
+require_once __DIR__ . '/../birashoboka_api/bootstrap.php';
+// require_once __DIR__ . '/../bootstrap.php';
+
+
 
 use App\Middleware\AuthMiddleware;
 
 $method = $_SERVER['REQUEST_METHOD'];
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$routes = require __DIR__ . '/../routes/api.php';
+$routes = require __DIR__ . '/../birashoboka_api/routes/api.php';
+
 
 if ($method === 'OPTIONS') {
     header('Access-Control-Allow-Origin: ' . env('CORS_ALLOWED_ORIGINS', '*'));
