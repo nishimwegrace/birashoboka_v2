@@ -5,12 +5,64 @@ require_once __DIR__ . '/../bootstrap.php';
 
 
 
+
 use App\Middleware\AuthMiddleware;
 
 $method = $_SERVER['REQUEST_METHOD'];
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+// Serve storage files directly when present (helps shared hosting without vhost alias)
+if (str_starts_with($uri, '/storage/')) {
+    $relative = substr($uri, strlen('/storage'));
+
+    // Prefer explicit storage path from env if provided
+    $envStorage = env('STORAGE_PATH', null);
+    $candidates = [];
+    if ($envStorage) {
+        $candidates[] = rtrim($envStorage, '/\\') . $relative;
+    }
+
+    // Common layouts: storage sibling to public_html or inside a sibling app folder
+    $candidates[] = __DIR__ . '/../storage' . $relative;
+    $candidates[] = __DIR__ . '/../birashoboka_api/storage' . $relative;
+    $candidates[] = __DIR__ . '/../../birashoboka_api/storage' . $relative;
+
+    $storagePath = null;
+    foreach ($candidates as $p) {
+        $rp = realpath($p);
+        if ($rp && is_file($rp) && is_readable($rp)) {
+            $storagePath = $rp;
+            break;
+        }
+    }
+
+    // compute base dirs for traversal protection
+    $baseCandidates = [];
+    if ($envStorage) {
+        $baseCandidates[] = realpath(rtrim($envStorage, '/\\'));
+    }
+    $baseCandidates[] = realpath(__DIR__ . '/../storage');
+    $baseCandidates[] = realpath(__DIR__ . '/../birashoboka_api/storage');
+    $baseCandidates[] = realpath(__DIR__ . '/../../birashoboka_api/storage');
+
+    $base = null;
+    foreach ($baseCandidates as $b) {
+        if ($b) { $base = $b; break; }
+    }
+
+    if ($storagePath && $base && str_starts_with($storagePath, $base)) {
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime  = finfo_file($finfo, $storagePath) ?: 'application/octet-stream';
+        finfo_close($finfo);
+        header('Content-Type: ' . $mime);
+        header('Content-Length: ' . filesize($storagePath));
+        header('Cache-Control: public, max-age=31536000');
+        readfile($storagePath);
+        exit;
+    }
+}
+
+
 $routes = require __DIR__ . '/../birashoboka_api/routes/api.php';
-$routes = require __DIR__ . '/../routes/api.php';
 
 
 if ($method === 'OPTIONS') {

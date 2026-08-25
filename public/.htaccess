@@ -1,14 +1,22 @@
 Options +FollowSymLinks
+DirectoryIndex index.html index.php
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteBase /
 
+    # If the request maps to an existing file or directory in the webroot, serve it directly
     RewriteCond %{REQUEST_FILENAME} -f [OR]
     RewriteCond %{REQUEST_FILENAME} -d
     RewriteRule ^ - [L]
 
+    # Route API requests to index.php
     RewriteRule ^api(/.*)?$ index.php [L,QSA]
+
+    # Route storage requests to index.php so PHP can serve files outside webroot
+    RewriteRule ^storage/(.*)$ index.php [L,QSA]
+
+    # Default: serve SPA index.html
     RewriteRule ^ index.html [L,QSA]
 </IfModule>
 
@@ -18,6 +26,12 @@ Options +FollowSymLinks
     php_value memory_limit 256M
 </IfModule>
 <IfModule mod_php7.c>
+    php_value upload_max_filesize 64M
+    php_value post_max_size 64M
+    php_value memory_limit 256M
+</IfModule>
+
+<IfModule mod_php8.c>
     php_value upload_max_filesize 64M
     php_value post_max_size 64M
     php_value memory_limit 256M
