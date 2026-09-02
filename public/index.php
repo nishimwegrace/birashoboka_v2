@@ -62,7 +62,7 @@ if (str_starts_with($uri, '/storage/')) {
 }
 
 
-$routes = require __DIR__ . '/../birashoboka_api/routes/api.php';
+$routes = require __DIR__ . '/../routes/api.php';
 
 
 if ($method === 'OPTIONS') {
