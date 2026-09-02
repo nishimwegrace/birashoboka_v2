@@ -3,14 +3,6 @@
 require_once __DIR__ . '/../bootstrap.php';
 
 use App\Models\User;
-use App\Models\Volet;
-use App\Models\Activity;
-use App\Models\Partner;
-use App\Models\Testimonial;
-use App\Models\Post;
-use App\Models\Campaign;
-use App\Models\Student;
-use App\Models\Inscription;
 use App\Services\AuthService;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
@@ -22,22 +14,14 @@ try {
 }
 
 Capsule::statement('SET FOREIGN_KEY_CHECKS=0');
-Capsule::table('inscriptions')->truncate();
-Capsule::table('campaigns')->truncate();
-Capsule::table('posts')->truncate();
-Capsule::table('testimonials')->truncate();
-Capsule::table('partners')->truncate();
-Capsule::table('activities')->truncate();
-Capsule::table('volets')->truncate();
-Capsule::table('students')->truncate();
 Capsule::table('users')->truncate();
 Capsule::statement('SET FOREIGN_KEY_CHECKS=1');
 
 // Users
 $user = User::create([
-    'name' => 'Gérard Nishimwe',
+    'name' => 'Grace Nishimwe',
     'email' => 'admin@birashobokacenter.org',
-    'password' => AuthService::hashPassword('admin123'),
+    'password' => AuthService::hashPassword('password'),
 ]);
 AuthService::createTokenForUser($user);
 
@@ -48,66 +32,5 @@ $user2 = User::create([
     'password' => AuthService::hashPassword('password'),
 ]);
 AuthService::createTokenForUser($user2);
-
-// Volets
-$volet1 = Volet::create([
-    'name' => 'Education',
-    'slogan' => 'Learn and grow',
-    'subtitle' => 'Youth programs',
-    'description' => 'Programs for young learners',
-    'target' => 'young',
-    'place' => 'Kigali',
-    'carousel_images' => [
-        'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1600&q=80',
-        'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1600&q=80',
-    ],
-]);
-
-$volet2 = Volet::create([
-    'name' => 'Women Empowerment',
-    'slogan' => 'Strong women, strong nation',
-    'subtitle' => 'Skills for women',
-    'description' => 'Programs for women',
-    'target' => 'women',
-    'place' => 'Butare',
-    'carousel_images' => [
-        'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1600&q=80',
-        'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=1600&q=80',
-    ],
-]);
-
-// Activities
-$activity1 = Activity::create(['volet_id' => $volet1->id, 'title' => 'Coding Bootcamp', 'description' => 'Learn to code']);
-$activity2 = Activity::create(['volet_id' => $volet2->id, 'title' => 'Entrepreneurship', 'description' => 'Business skills for women']);
-
-// Partners
-Partner::create(['name' => 'Global NGO', 'volet_id' => null]);
-Partner::create(['name' => 'Local School', 'volet_id' => $volet1->id]);
-
-// Testimonials
-Testimonial::create(['activity_id' => $activity1->id, 'name' => 'Alice', 'photo' => null, 'content' => 'Great program']);
-
-// Posts
-Post::create(['volet_id' => $volet1->id, 'title' => 'New Session', 'description' => 'Enroll now', 'published_at' => date('Y-m-d H:i:s')]);
-
-// Campaigns
-$campaign = Campaign::create([
-    'volet_id' => $volet1->id,
-    'activity_id' => $activity1->id,
-    'edition' => '2026',
-    'title' => 'Summer Coding',
-    'description' => 'Summer coding camp',
-    'registration_start' => date('Y-m-d', strtotime('+1 week')),
-    'registration_end' => date('Y-m-d', strtotime('+2 weeks')),
-    'start_date' => date('Y-m-d', strtotime('+3 weeks')),
-    'end_date' => date('Y-m-d', strtotime('+4 weeks')),
-    'place' => $volet1->place,
-]);
-
-// Students
-$student = Student::create(['name' => 'Student One', 'email' => 'student1@example.com']);
-
-// Inscription
-Inscription::create(['campaign_id' => $campaign->id, 'student_id' => $student->id, 'status' => 'pending']);
 
 echo "Seeding complete." . PHP_EOL;
