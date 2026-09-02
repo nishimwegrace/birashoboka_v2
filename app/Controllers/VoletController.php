@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\Volet;
 use App\Validators\Validator;
+use App\Services\ImageService;
 use Illuminate\Database\Capsule\Manager as DB;
 
 class VoletController extends Controller
@@ -15,7 +16,7 @@ class VoletController extends Controller
         self::paginate($query, 'Volets retrieved successfully');
     }
 
-    public static function store(array $body): void
+    public static function store(array $body, array $files = []): void
     {
         $errors = Validator::validate($body, [
             'name' => 'required|string',
@@ -30,6 +31,8 @@ class VoletController extends Controller
             apiResponse(false, 'Validation failed', $errors, 422);
         }
 
+        $carouselImages = self::processCarouselImages($files, []);
+
         $volet = Volet::create([
             'name' => trim($body['name']),
             'slogan' => trim($body['slogan'] ?? ''),
@@ -37,6 +40,7 @@ class VoletController extends Controller
             'description' => trim($body['description'] ?? ''),
             'target' => $body['target'] ?? 'women',
             'place' => trim($body['place'] ?? 'Ngozi & Bujumbura, Burundi'),
+            'carousel_images' => $carouselImages,
         ]);
 
         apiResponse(true, 'Volet created successfully', $volet, 201);
@@ -52,7 +56,7 @@ class VoletController extends Controller
         apiResponse(true, 'Volet retrieved successfully', $volet);
     }
 
-    public static function update(int $id, array $body): void
+    public static function update(int $id, array $body, array $files = []): void
     {
         $volet = Volet::find($id);
         if (!$volet) {
@@ -77,6 +81,14 @@ class VoletController extends Controller
                 $volet->{$field} = $body[$field];
             }
         }
+
+        if (!empty($files['carousel_images'])) {
+            $newImages = self::processCarouselImages($files, $volet->carousel_images ?? []);
+            $volet->carousel_images = $newImages;
+            $volet->save();
+            apiResponse(true, 'Volet updated successfully', $volet);
+        }
+
         $volet->save();
 
         apiResponse(true, 'Volet updated successfully', $volet);
@@ -87,6 +99,12 @@ class VoletController extends Controller
         $volet = Volet::find($id);
         if (!$volet) {
             apiResponse(false, 'Volet not found', null, 404);
+        }
+
+        if (!empty($volet->carousel_images)) {
+            foreach ($volet->carousel_images as $url) {
+                ImageService::delete($url);
+            }
         }
 
         $volet->delete();
@@ -139,5 +157,50 @@ class VoletController extends Controller
         $query = $volet->campaigns();
         self::applySearchAndSort($query, ['title', 'description', 'edition', 'place'], ['start_date', 'registration_start', 'created_at']);
         self::paginate($query, 'Volet campaigns retrieved successfully');
+    }
+
+    /**
+     * Upload any carousel image files and merge them onto the existing image list.
+     */
+    private static function processCarouselImages(array $files, array $existing): array
+    {
+        $images = $existing;
+        if (!empty($files['carousel_images'])) {
+            $uploadedFiles = self::normalizeMultipleFiles($files['carousel_images']);
+            foreach ($uploadedFiles as $file) {
+                try {
+                    $images[] = ImageService::processUpload($file, 'volets');
+                } catch (\RuntimeException $e) {
+                    // Skip failed individual images
+                }
+            }
+        }
+        return $images;
+    }
+
+    /**
+     * Normalize PHP multiple file upload array format.
+     */
+    private static function normalizeMultipleFiles(array $fileGroup): array
+    {
+        if (isset($fileGroup['tmp_name']) && !is_array($fileGroup['tmp_name'])) {
+            return [$fileGroup];
+        }
+        if (isset($fileGroup['tmp_name']) && is_array($fileGroup['tmp_name'])) {
+            $files = [];
+            foreach ($fileGroup['tmp_name'] as $index => $tmp) {
+                if ($fileGroup['error'][$index] === UPLOAD_ERR_OK) {
+                    $files[] = [
+                        'name'     => $fileGroup['name'][$index],
+                        'type'     => $fileGroup['type'][$index],
+                        'tmp_name' => $tmp,
+                        'error'    => $fileGroup['error'][$index],
+                        'size'     => $fileGroup['size'][$index],
+                    ];
+                }
+            }
+            return $files;
+        }
+        return [];
     }
 }

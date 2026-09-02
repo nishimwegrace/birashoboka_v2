@@ -7,8 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 class Volet extends Model
 {
     protected $table = 'volets';
-    protected $fillable = ['name', 'slogan', 'subtitle', 'description', 'target', 'place'];
+    protected $fillable = ['name', 'slogan', 'subtitle', 'description', 'target', 'place', 'carousel_images'];
     public $timestamps = true;
+    protected $casts = [
+        'carousel_images' => 'array',
+    ];
 
     public function activities()
     {

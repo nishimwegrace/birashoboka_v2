@@ -21,6 +21,7 @@ return [
     ['method' => 'POST', 'path' => '/api/volets', 'action' => 'VoletController@store', 'auth' => true],
     ['method' => 'GET', 'path' => '/api/volets/{id}', 'action' => 'VoletController@show', 'auth' => false],
     ['method' => 'PUT', 'path' => '/api/volets/{id}', 'action' => 'VoletController@update', 'auth' => true],
+    ['method' => 'POST', 'path' => '/api/volets/{id}', 'action' => 'VoletController@update', 'auth' => true],
     ['method' => 'DELETE', 'path' => '/api/volets/{id}', 'action' => 'VoletController@destroy', 'auth' => true],
     ['method' => 'GET', 'path' => '/api/volets/{id}/activities', 'action' => 'VoletController@activities', 'auth' => false],
     ['method' => 'GET', 'path' => '/api/volets/{id}/partners', 'action' => 'VoletController@partners', 'auth' => false],
